@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build output
+build/
+
+# Xcode (if added later)
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.xccheckout
+*.resolved
