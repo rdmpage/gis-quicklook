@@ -10,6 +10,7 @@
 #include "ReadVector.h"
 #include "ESRIShape.h"
 #include "E00.h"
+#include "GeoJSONShape.h"
 
 #define MAX_CONTEXT_SIZE 1000
 #define MIN_CONTEXT_SIZE 10
@@ -33,10 +34,12 @@ static CFStringRef vectorUTIForURL(CFStringRef contentTypeUTI, CFURLRef url) {
 	CFStringRef ESRI_SHAPE_UTI = CFSTR("com.esri.shape");
 	CFStringRef E00_UTI        = CFSTR("com.esri.e00");
 	CFStringRef COVERAGE_UTI   = CFSTR("com.esri.coverage");
+	CFStringRef GEOJSON_UTI    = CFSTR("public.geojson");
 
 	if (UTTypeConformsTo(contentTypeUTI, ESRI_SHAPE_UTI) ||
 	    UTTypeConformsTo(contentTypeUTI, E00_UTI) ||
-	    UTTypeConformsTo(contentTypeUTI, COVERAGE_UTI))
+	    UTTypeConformsTo(contentTypeUTI, COVERAGE_UTI) ||
+	    UTTypeConformsTo(contentTypeUTI, GEOJSON_UTI))
 		return contentTypeUTI;
 
 	// UTI not recognised — map from file extension
@@ -53,6 +56,8 @@ static CFStringRef vectorUTIForURL(CFStringRef contentTypeUTI, CFURLRef url) {
 			result = E00_UTI;
 		else if (CFStringCompare(ext, CFSTR("adf"), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
 			result = COVERAGE_UTI;
+		else if (CFStringCompare(ext, CFSTR("geojson"), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+			result = GEOJSON_UTI;
 		CFRelease(ext);
 	}
 	return result;
@@ -62,7 +67,8 @@ bool isVector(CFStringRef contentTypeUTI, CFURLRef url) {
 	CFStringRef uti = vectorUTIForURL(contentTypeUTI, url);
 	return UTTypeConformsTo(uti, CFSTR("com.esri.shape"))
 	    || UTTypeConformsTo(uti, CFSTR("com.esri.e00"))
-	    || UTTypeConformsTo(uti, CFSTR("com.esri.coverage"));
+	    || UTTypeConformsTo(uti, CFSTR("com.esri.coverage"))
+	    || UTTypeConformsTo(uti, CFSTR("public.geojson"));
 }
 
 void setColorForPolygons(CGContextRef cgContext, double scale) {
@@ -102,6 +108,9 @@ bool readVector(QLPreviewRequestRef preview,
 	} else if (UTTypeConformsTo (contentTypeUTI, E00_UTI)
 			   || UTTypeConformsTo (contentTypeUTI, COVERAGE_UTI)) {
 		if (!readE00Size((char*)path, &x, &y, &width, &height, preview, thumbnail))
+			return FALSE;
+	} else if (UTTypeConformsTo (contentTypeUTI, CFSTR("public.geojson"))) {
+		if (!readGeoJSONShapeSize((char*)path, &x, &y, &width, &height, preview, thumbnail))
 			return FALSE;
 	}
 	
@@ -148,6 +157,8 @@ bool readVector(QLPreviewRequestRef preview,
 	} else if (UTTypeConformsTo (contentTypeUTI, E00_UTI)
 			   || UTTypeConformsTo (contentTypeUTI, COVERAGE_UTI)){
 		res = readE00((char*)path, scale, cgContext, preview, thumbnail);
+	} else if (UTTypeConformsTo (contentTypeUTI, CFSTR("public.geojson"))) {
+		res = readGeoJSONShape((char*)path, scale, cgContext, preview, thumbnail);
 	}
 	
 	if (preview)

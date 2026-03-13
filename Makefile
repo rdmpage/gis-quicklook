@@ -45,7 +45,8 @@ CFLAGS := \
 	-I$(SRCDIR) \
 	-I$(SRCDIR)/avce00-2.0.0 \
 	-I$(SRCDIR)/e00compr-1.0.0 \
-	-I$(SRCDIR)/shape
+	-I$(SRCDIR)/shape \
+	-I$(SRCDIR)/cjson
 
 LDFLAGS := \
 	$(ARCHS) \
@@ -75,6 +76,7 @@ GISSOURCE_SRCS := \
 	$(SRCDIR)/ESRIBinaryGridToImage.c \
 	$(SRCDIR)/ESRIShape.c \
 	$(SRCDIR)/File.c \
+	$(SRCDIR)/GeoJSONShape.c \
 	$(SRCDIR)/HdrFile.c \
 	$(SRCDIR)/PGMToImage.c \
 	$(SRCDIR)/ReadDBF.c \
@@ -113,7 +115,10 @@ SHAPE_SRCS := \
 	$(SRCDIR)/shape/shpopen.c \
 	$(SRCDIR)/shape/shptree.c
 
-ALL_SRCS := $(PLUGIN_SRCS) $(GISSOURCE_SRCS) $(AVCE00_SRCS) $(E00COMPR_SRCS) $(SHAPE_SRCS)
+CJSON_SRCS := \
+	$(SRCDIR)/cjson/cJSON.c
+
+ALL_SRCS := $(PLUGIN_SRCS) $(GISSOURCE_SRCS) $(AVCE00_SRCS) $(E00COMPR_SRCS) $(SHAPE_SRCS) $(CJSON_SRCS)
 
 # Derive object file paths under build/obj/
 OBJS := $(patsubst %.c,$(BUILDDIR)/obj/%.o,$(ALL_SRCS))
@@ -186,6 +191,7 @@ test: install
 		hgt) echo gov.nasa.srtm ;; \
 		dem) echo gov.usgs.dem ;; \
 		pgm) echo net.sourceforge.netpbm.pgm ;; \
+		geojson) echo public.geojson ;; \
 		*) echo "" ;; \
 	esac); \
 	if [ -n "$$uti" ]; then \

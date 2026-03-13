@@ -23,6 +23,7 @@
 				<string>gov.nasa.srtm</string>
 				<string>gov.usgs.dem</string>
 				<string>net.sourceforge.netpbm.pgm</string>
+				<string>public.geojson</string>
 			</array>
 		</dict>
 	</array>
