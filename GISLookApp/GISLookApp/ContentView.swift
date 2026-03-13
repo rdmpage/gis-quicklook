@@ -9,6 +9,7 @@ struct ContentView: View {
         ("BIL / BIP / BSQ",   ".bil  .bip  .bsq"),
         ("ArcInfo Coverage",  ".adf"),
         ("ArcInfo E00",       ".e00"),
+        ("GeoJSON",           ".geojson"),
         ("USGS DEM",          ".dem"),
         ("SRTM",              ".hgt"),
         ("Surfer Grid",       ".grd"),
