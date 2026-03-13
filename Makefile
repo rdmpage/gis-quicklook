@@ -1,14 +1,15 @@
-# GISLook QuickLook Generator + GISTypes UTI Registration
-# Builds GISLook.qlgenerator for macOS 13+ (universal binary: arm64 + x86_64)
-# and GISTypes.app (stub app that registers GIS UTIs with Launch Services).
+# GISLook QuickLook Generator
+# Builds GISLook.qlgenerator for macOS 13+ (universal binary: arm64 + x86_64).
 #
-# Usage:
-#   make          - build both the plugin and the UTI stub app
-#   make install  - install to ~/Library/QuickLook/ and ~/Applications/,
-#                   register UTIs, and reload QuickLook
-#   make test     - test the plugin with qlmanage (set TEST_FILE=path/to/file.shp)
-#   make uninstall - remove both installed items
-#   make clean    - remove build artifacts
+# Normal install: build GISLookApp in Xcode and drag to /Applications.
+# The Xcode build phase calls `make build` automatically.
+#
+# Developer targets (for testing without Xcode):
+#   make / make build  - build the plugin only
+#   make install       - build + install to ~/Library/QuickLook/
+#   make uninstall     - remove from ~/Library/QuickLook/
+#   make test          - test with qlmanage (set TEST_FILE=path/to/file.shp)
+#   make clean         - remove build artifacts
 
 # ── Toolchain ────────────────────────────────────────────────────────────────
 CC      := xcrun clang
@@ -24,20 +25,14 @@ CODESIGN_ID := Apple Development: r.page@bio.gla.ac.uk (X9YL37JCBJ)
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SRCDIR   := GISSource
 PLGDIR   := GISLook
-TYPDIR   := GISTypes
 BUILDDIR := build
 
 # QuickLook generator bundle
 BUNDLE  := $(BUILDDIR)/GISLook.qlgenerator
 BINARY  := $(BUNDLE)/Contents/MacOS/GISLook
 
-# UTI registration stub app
-TYPES_APP := $(BUILDDIR)/GISTypes.app
-TYPES_BIN := $(TYPES_APP)/Contents/MacOS/GISTypes
-
-# Install destinations
-QL_INSTALL_DIR   := $(HOME)/Library/QuickLook
-APPS_INSTALL_DIR := $(HOME)/Applications
+# Install destination (developer testing only)
+QL_INSTALL_DIR := $(HOME)/Library/QuickLook
 
 # ── Compiler flags ────────────────────────────────────────────────────────────
 CFLAGS := \
@@ -122,8 +117,9 @@ ALL_SRCS := $(PLUGIN_SRCS) $(GISSOURCE_SRCS) $(AVCE00_SRCS) $(E00COMPR_SRCS) $(S
 OBJS := $(patsubst %.c,$(BUILDDIR)/obj/%.o,$(ALL_SRCS))
 
 # ── Default target ─────────────────────────────────────────────────────────────
-.PHONY: all
-all: $(BUNDLE) $(TYPES_APP)
+.PHONY: all build
+all: $(BUNDLE)
+build: $(BUNDLE)
 
 # ── QuickLook generator bundle assembly ────────────────────────────────────────
 $(BUNDLE): $(BINARY) $(PLGDIR)/Info.plist
@@ -142,31 +138,16 @@ $(BUILDDIR)/obj/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# ── UTI stub app ──────────────────────────────────────────────────────────────
-$(TYPES_APP): $(TYPES_BIN) $(TYPDIR)/Info.plist
-	@cp $(TYPDIR)/Info.plist $(TYPES_APP)/Contents/Info.plist
-	@codesign --force --sign "$(CODESIGN_ID)" $(TYPES_APP)
-	@echo "✓ Built and signed: $(TYPES_APP)"
-
-$(TYPES_BIN): $(TYPDIR)/main.c
-	@mkdir -p $(TYPES_APP)/Contents/MacOS
-	@mkdir -p $(TYPES_APP)/Contents/Resources
-	$(CC) $(ARCHS) -isysroot $(SDK) -mmacosx-version-min=13.0 -o $@ $<
-
-# ── Install ───────────────────────────────────────────────────────────────────
+# ── Install (developer testing only) ─────────────────────────────────────────
+# For normal use, build GISLookApp in Xcode and drag to /Applications instead.
 .PHONY: install
-install: all
+install: $(BUNDLE)
 	@mkdir -p $(QL_INSTALL_DIR)
 	@rm -rf $(QL_INSTALL_DIR)/GISLook.qlgenerator
 	@cp -r $(BUNDLE) $(QL_INSTALL_DIR)/
-	@mkdir -p $(APPS_INSTALL_DIR)
-	@rm -rf $(APPS_INSTALL_DIR)/GISTypes.app
-	@cp -r $(TYPES_APP) $(APPS_INSTALL_DIR)/
-	@$(LSREG) -f $(APPS_INSTALL_DIR)/GISTypes.app
 	@qlmanage -r
 	@qlmanage -r cache
 	@echo "✓ Installed GISLook.qlgenerator to $(QL_INSTALL_DIR)"
-	@echo "✓ Installed GISTypes.app to $(APPS_INSTALL_DIR) (UTIs registered)"
 	@echo "  QuickLook cache reset. You may need to log out and back in"
 	@echo "  for Finder icon thumbnails to update."
 
@@ -174,9 +155,8 @@ install: all
 .PHONY: uninstall
 uninstall:
 	@rm -rf $(QL_INSTALL_DIR)/GISLook.qlgenerator
-	@rm -rf $(APPS_INSTALL_DIR)/GISTypes.app
 	@qlmanage -r
-	@echo "✓ Uninstalled GISLook.qlgenerator and GISTypes.app"
+	@echo "✓ Uninstalled GISLook.qlgenerator"
 
 # ── Test ──────────────────────────────────────────────────────────────────────
 # Usage: make test TEST_FILE=/path/to/file.shp

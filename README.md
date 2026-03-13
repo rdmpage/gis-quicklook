@@ -22,35 +22,38 @@ This is a modernized fork of [GISLook/GISMeta](https://github.com/berniejenny/GI
 ## Requirements
 
 - macOS 13 Ventura or later
-- Xcode Command Line Tools (`xcode-select --install`)
+- Xcode (for building)
 
-## Build and install
+## Install
 
-```sh
-make install
-```
+1. Clone the repo and open `GISLookApp/GISLookApp.xcodeproj` in Xcode
+2. Build (⌘B)
+3. Copy `GISLookApp.app` from the Xcode build output to `/Applications/`
 
-This builds a universal binary (arm64 + x86_64), installs it to `~/Library/QuickLook/`, and resets the QuickLook cache.
+That's it. The QuickLook plugin is embedded in the app bundle and registered automatically by macOS. The app does not need to be running for previews to work.
 
-You may need to log out and back in for Finder icon thumbnails to refresh.
+## Building the plugin for development
 
-## Other make targets
-
-```sh
-make              # build only (output: build/GISLook.qlgenerator)
-make install      # build + install to ~/Library/QuickLook/
-make uninstall    # remove from ~/Library/QuickLook/
-make test TEST_FILE=/path/to/file.shp   # preview a specific file
-make clean        # remove build artifacts
-```
-
-## Testing without installing
+If you want to iterate on the C rendering code without going through Xcode each time:
 
 ```sh
-make test TEST_FILE=/path/to/your/data.shp
+make          # build only (output: build/GISLook.qlgenerator)
+make install  # build + install directly to ~/Library/QuickLook/
+make test TEST_FILE=/path/to/file.shp
+make clean
 ```
 
-This runs `qlmanage` directly against the built plugin so you can test without installing.
+`make install` is useful for rapid testing. For distribution, use the Xcode app.
+
+## Repository layout
+
+```
+GISLook/        Plugin entry points (C): factory, preview, thumbnail callbacks
+GISSource/      GIS format readers: shapelib, raster grids, E00, etc.
+GISLookApp/     SwiftUI host app (embeds the plugin, registers UTIs)
+examples/       Sample shapefile for testing
+docs/           Development notes
+```
 
 ## License
 
