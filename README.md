@@ -55,6 +55,10 @@ examples/       Sample shapefile for testing
 docs/           Development notes
 ```
 
+## References
+
+- Jenny, Bernhard. (2008). Previewing GIS data with GISlook on mac OS X. The bulletin of the Society of University Cartographers. Society of University Cartographers. 42. 49-50. 
+
 ## License
 
 GNU General Public License v3. See [LICENSE](LICENSE).
