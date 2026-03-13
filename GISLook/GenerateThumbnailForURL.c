@@ -4,6 +4,7 @@
 #include <os/log.h>
 #include "ReadRaster.h"
 #include "ReadVector.h"
+#include "ReadDBF.h"
 
 /* -----------------------------------------------------------------------------
  Generate a thumbnail for file
@@ -19,6 +20,12 @@ OSStatus GenerateThumbnailForURL(void *thisInterface,
 								 CGSize maxSize)
 {
 	os_log(OS_LOG_DEFAULT, "GISLook thumbnail: UTI=%{public}@", contentTypeUTI);
+
+	if (isDBF(contentTypeUTI, url)) {
+		bool readOk = readDBF(NULL, thumbnail, url, contentTypeUTI);
+		os_log(OS_LOG_DEFAULT, "GISLook thumbnail: readDBF=%d", readOk);
+		if (readOk) return noErr;
+	}
 
 	bool vec = isVector(contentTypeUTI, url);
 	os_log(OS_LOG_DEFAULT, "GISLook thumbnail: isVector=%d", vec);

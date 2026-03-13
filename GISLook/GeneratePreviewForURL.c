@@ -4,6 +4,7 @@
 #include <os/log.h>
 #include "ReadRaster.h"
 #include "ReadVector.h"
+#include "ReadDBF.h"
 
 /* -----------------------------------------------------------------------------
  Generate a preview for file
@@ -18,6 +19,12 @@ OSStatus GeneratePreviewForURL(void *thisInterface,
 							   CFDictionaryRef options)
 {
 	os_log(OS_LOG_DEFAULT, "GISLook preview: UTI=%{public}@", contentTypeUTI);
+
+	if (isDBF(contentTypeUTI, url)) {
+		bool readOk = readDBF(preview, NULL, url, contentTypeUTI);
+		os_log(OS_LOG_DEFAULT, "GISLook preview: readDBF=%d", readOk);
+		if (readOk) return noErr;
+	}
 
 	bool vec = isVector(contentTypeUTI, url);
 	os_log(OS_LOG_DEFAULT, "GISLook preview: isVector=%d", vec);

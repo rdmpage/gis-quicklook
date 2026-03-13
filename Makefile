@@ -55,7 +55,8 @@ LDFLAGS := \
 	-framework QuickLook \
 	-framework CoreFoundation \
 	-framework CoreServices \
-	-framework ApplicationServices
+	-framework ApplicationServices \
+	-framework CoreText
 
 # ── Source files ──────────────────────────────────────────────────────────────
 # Plugin entry points
@@ -76,6 +77,7 @@ GISSOURCE_SRCS := \
 	$(SRCDIR)/File.c \
 	$(SRCDIR)/HdrFile.c \
 	$(SRCDIR)/PGMToImage.c \
+	$(SRCDIR)/ReadDBF.c \
 	$(SRCDIR)/ReadRaster.c \
 	$(SRCDIR)/ReadVector.c \
 	$(SRCDIR)/SRTMToImage.c \
