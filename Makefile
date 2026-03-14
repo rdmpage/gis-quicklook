@@ -11,6 +11,19 @@
 #   make test          - test with qlmanage (set TEST_FILE=path/to/file.shp)
 #   make clean         - remove build artifacts
 
+# ── Thumbnail style ───────────────────────────────────────────────────────────
+# Controls how vector/GeoJSON file icons appear in Finder:
+#   0 = transparent background — Finder wraps thumbnail in white document-frame + dog-ear
+#   1 = dark #1e1e1e background — document-frame decoration less visible
+#   2 = transparent + Info-image.plist declares public.image UTI conformance
+#       so Finder shows the thumbnail full-bleed with no document frame (default)
+#
+# Override at build time:  make THUMBNAIL_STYLE=1
+THUMBNAIL_STYLE ?= 0
+
+# Select the matching Info.plist (style 2 uses Info-image.plist for UTI declarations)
+INFOPLIST_SRC = $(if $(filter 2,$(THUMBNAIL_STYLE)),$(PLGDIR)/Info-image.plist,$(PLGDIR)/Info.plist)
+
 # ── Toolchain ────────────────────────────────────────────────────────────────
 CC      := xcrun clang
 SDK     := $(shell xcrun --show-sdk-path --sdk macosx)
@@ -42,6 +55,7 @@ CFLAGS := \
 	-O2 \
 	-Wall \
 	-Wno-deprecated-declarations \
+	-DTHUMBNAIL_STYLE=$(THUMBNAIL_STYLE) \
 	-I$(SRCDIR) \
 	-I$(SRCDIR)/avce00-2.0.0 \
 	-I$(SRCDIR)/e00compr-1.0.0 \
@@ -129,10 +143,10 @@ all: $(BUNDLE)
 build: $(BUNDLE)
 
 # ── QuickLook generator bundle assembly ────────────────────────────────────────
-$(BUNDLE): $(BINARY) $(PLGDIR)/Info.plist
-	@cp $(PLGDIR)/Info.plist $(BUNDLE)/Contents/Info.plist
+$(BUNDLE): $(BINARY) $(INFOPLIST_SRC)
+	@cp $(INFOPLIST_SRC) $(BUNDLE)/Contents/Info.plist
 	@codesign --force --sign "$(CODESIGN_ID)" $(BUNDLE)
-	@echo "✓ Built and signed: $(BUNDLE)"
+	@echo "✓ Built and signed: $(BUNDLE) [THUMBNAIL_STYLE=$(THUMBNAIL_STYLE)]"
 
 # ── Link plugin ────────────────────────────────────────────────────────────────
 $(BINARY): $(OBJS)

@@ -72,13 +72,17 @@ bool isVector(CFStringRef contentTypeUTI, CFURLRef url) {
 }
 
 void setColorForPolygons(CGContextRef cgContext, double scale) {
-	CGContextSetFillColorWithColor(cgContext, CGColorGetConstantColor(kCGColorBlack));
-	CGContextSetStrokeColorWithColor(cgContext, CGColorGetConstantColor(kCGColorWhite));
+	CGColorRef fillColor   = CGColorCreateGenericRGB(0.502, 0.502, 0.502, 1); // #808080
+	CGColorRef strokeColor = CGColorCreateGenericRGB(0.333, 0.333, 0.333, 1); // #555555
+	CGContextSetFillColorWithColor(cgContext, fillColor);
+	CGContextSetStrokeColorWithColor(cgContext, strokeColor);
+	CFRelease(fillColor);
+	CFRelease(strokeColor);
 	CGContextSetLineWidth(cgContext, LINE_WIDTH / scale / 2);
 }
 
 void setColorForLines(CGContextRef cgContext, double scale) {
-	CGColorRef strokeColor = CGColorCreateGenericRGB(0, 0, 0, 1);
+	CGColorRef strokeColor = CGColorCreateGenericRGB(0.502, 0.502, 0.502, 1); // #808080
 	CGContextSetFillColorWithColor(cgContext, strokeColor);
 	CGContextSetStrokeColorWithColor(cgContext, strokeColor);
 	CFRelease(strokeColor);
@@ -137,18 +141,27 @@ bool readVector(QLPreviewRequestRef preview,
 	CGSize size = CGSizeMake(width + 2 * BORDER, height + 2 * BORDER);
 	CGContextRef cgContext = NULL;
 	if (preview != NULL)
-		cgContext = QLPreviewRequestCreateContext(preview, size, false, NULL);
+		cgContext = QLPreviewRequestCreateContext(preview, size, true, NULL);
 	else if (thumbnail != NULL)
-		cgContext = QLThumbnailRequestCreateContext(thumbnail, size, false, NULL);
+		cgContext = QLThumbnailRequestCreateContext(thumbnail, size, true, NULL);
 	if(!cgContext)
 		return FALSE;
-	
-	// draw background
-	CGContextSetFillColorWithColor(cgContext, CGColorGetConstantColor(kCGColorWhite)); 
-	CGRect rect = CGRectMake(0, 0, width + 2 * BORDER, height + 2 * BORDER);
-	CGContextFillRect (cgContext, rect);
-	
-	CGContextScaleCTM(cgContext, scale, scale); 
+
+	// THUMBNAIL_STYLE controls icon appearance in Finder (set via Makefile):
+	//   0 = transparent — Finder wraps thumbnail in white document-frame + dog-ear
+	//   1 = dark #1e1e1e background — document-frame decoration less visible
+	//   2 = transparent + Info-image.plist declares public.image UTI conformance
+	//       so Finder shows the thumbnail full-bleed with no document frame
+#if THUMBNAIL_STYLE == 1
+	if (thumbnail != NULL) {
+		CGColorRef bgColor = CGColorCreateGenericRGB(0.118, 0.118, 0.118, 1.0); // #1e1e1e
+		CGContextSetFillColorWithColor(cgContext, bgColor);
+		CGColorRelease(bgColor);
+		CGContextFillRect(cgContext, CGRectMake(0, 0, size.width, size.height));
+	}
+#endif
+
+	CGContextScaleCTM(cgContext, scale, scale);
 	CGContextTranslateCTM (cgContext, -x + BORDER / scale, -y + BORDER / scale);
 	
 	bool res = FALSE;
