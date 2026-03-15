@@ -4,9 +4,9 @@
 
 A macOS QuickLook plugin for GIS raster and vector files. Press **Space** in Finder to preview shapefiles, grids, DEMs, and more. GISLookApp also enables Finder to display thumbnail icons for GIS files so you can identify them at a glance without opening them.
 
-This is a modernized fork of [GISLook/GISMeta](https://github.com/berniejenny/GISLook-GISMeta) by Bernhard Jenny (Oregon State University), updated to build and run on macOS 13 Ventura and later with Apple Silicon support.
-
 ![GISLook preview and thumbnail icons in Finder](docs/screenshot.png)
+
+This is a modernized fork of [GISLook/GISMeta](https://github.com/berniejenny/GISLook-GISMeta) by Bernhard Jenny (Oregon State University), updated to build and run on macOS 13 Ventura and later with Apple Silicon support.
 
 ## Supported formats
 
