@@ -1,4 +1,6 @@
-# gis-quicklook
+# GIS QuickLook
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 A macOS QuickLook plugin for GIS raster and vector files. Press **Space** in Finder to preview shapefiles, grids, DEMs, and more. GISLookApp also enables Finder to display thumbnail icons for GIS files so you can identify them at a glance without opening them.
 
